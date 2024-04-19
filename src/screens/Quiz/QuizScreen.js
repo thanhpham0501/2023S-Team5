@@ -4,6 +4,7 @@ import { Audio } from 'expo-av';
 import Config from '../../../config';
 
 const QuizScreen = () => {
+  // Array of quiz questions
   const questions = [
     {
         questionText: '1. What is the correct IPA for the word "Leisure"?',
@@ -96,16 +97,17 @@ const QuizScreen = () => {
         ],
       },
   ];
-
+ // State variables
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showScore, setShowScore] = useState(false);
   const [score, setScore] = useState(0);
-
+// Function to handle user's answer selection
   const handleAnswerOptionClick = (isCorrect) => {
     if (isCorrect) {
-      setScore(score + 1);
+      setScore(score + 1);// Increase score if the answer is correct
     }
-
+    // Move to the next question or show the score if all questions have been answered
+  
     const nextQuestion = currentQuestion + 1;
     if (nextQuestion < questions.length) {
       setCurrentQuestion(nextQuestion);
@@ -113,7 +115,7 @@ const QuizScreen = () => {
       setShowScore(true);
     }
   };
-
+ // Render the component
   return (
     <View style={styles.container}>
       {showScore ? (
@@ -144,7 +146,7 @@ const QuizScreen = () => {
     </View>
   );
 };
-
+// style
 const styles = StyleSheet.create({
     container: {
       flex: 1,

@@ -20,28 +20,33 @@ import { Auth } from 'aws-amplify';
 import {useForm, Controller} from 'react-hook-form';
 import { useRoute } from "@react-navigation/native";
 
-
+// Define the SignInScreen component
 const SignInScreen = ({navigation}) => {
+   // State variables for username, password, and loading state
   const [username, setUsername] = useState();
   const [password, setPassword] = useState();
   const {control, handleSubmit, formState: {errors}} = useForm();
-
+  // Get window dimensions
   const {height} = useWindowDimensions();
   // const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
 
-
+  // Event handler for sign-in button
   const onSignInPressed = async data => {
 
     try {
+       // Attempt to sign in using AWS Amplify Auth module
       const response = await Auth.signIn(data.username, data.password);
       const userInfo = await Auth.currentUserInfo();
+      // Get current user info
       console.log(userInfo);
+      // Extract user info attributes
       const userName = userInfo.username;
       const name = userInfo.attributes.name;
       const email = userInfo.attributes.email;
       const phone_number = userInfo.attributes.phone_number;
 
+      // Navigate to the home screen upon successful sign-in
       navigation.navigate('TabNavigator', {
         screen: 'Home',
         params: {
@@ -52,21 +57,22 @@ const SignInScreen = ({navigation}) => {
         }
       });
     } catch(e) {
+      // Display an alert in case of sign-in error
       Alert.alert('Oops', e.message);
     }
 
   };
-
+  // Event handler for forgot password button
   const onForgotPasswordPressed = () => {
     navigation.navigate('ForgotPassword');
   };
-
+  // Event handler for sign-up button
   const onSignUpPress = () => {
     navigation.navigate('SignUp');
   };
-
+  // Render the component
   return (
-    
+     // Root view container
       <View style={styles.root}>
 
             <Video
@@ -142,7 +148,7 @@ const SignInScreen = ({navigation}) => {
     
   );
 };
-
+// Styles
 const styles = StyleSheet.create({
   root: {
     alignItems: 'center',

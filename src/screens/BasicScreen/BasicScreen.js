@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View,Image, Text, Alert, Button, StyleSheet,TouchableOpacity} from 'react-native';
+import {View,Image, Text, Alert, Button, StyleSheet,TouchableOpacity, ScrollView} from 'react-native';
 import { Audio } from 'expo-av';
 import Config from '../../../config';
 import MicStart from '../../../assets/images/micstart.png';
@@ -8,7 +8,7 @@ import Basic from '../../../assets/training_images/basic.png';
 
 const BasicScreen = () => {
 
-
+ // State variables for managing the recording process and displaying results
     const [textToRead, setTextToRead] = useState([]);
     const [recording, setRecording] = useState('');
     const [message, setMessage] = useState([]);
@@ -18,11 +18,13 @@ const BasicScreen = () => {
     const [ipa, setIpa] = useState('');
     const [soundsLike, setSoundsLike] = useState({});
     const [ipascore, setIpaScore] = useState({});
-
+// Function to start recording audio
     const startRecording = async () => {
         try {
+           // Request permission to use the microphone
             const permission = await Audio.requestPermissionsAsync();// allow app to use phone's microphone
             if (permission.status === "granted") {
+              // Set audio mode and create a new recording
                 await Audio.setAudioModeAsync({
                   allowsRecordingIOS: true,
                   playsInSilentModeIOS: true
@@ -55,22 +57,24 @@ const BasicScreen = () => {
             console.error('Failed to start recording', err);
         }
     }
-
+// Function to stop recording audio and analyze the recorded data
     const stopRecording = async () => {
+       // Stop recording and unload the recording
         setRecording(undefined);
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync({
             allowsRecordingIOS: false,
         });
-
+        // Create a new sound from the recording
         const { sound, status } = await recording.createNewLoadedSoundAsync();
-
+        // Fetch the recorded audio file and analyze it
         try {
+           // Fetch the recorded audio file and convert it to base64 format
             const response = await fetch(recording.getURI());
 
             const blob = await response.blob();
 
-            const blobToBase64 = (blob) => {
+            const blobToBase64 = (blob) => {/* Convert blob to base64 */
                 const reader = new FileReader();
                 reader.readAsDataURL(blob);
                 return new Promise((resolve) => {
@@ -81,27 +85,31 @@ const BasicScreen = () => {
               };
 
             const audioBase64 = await blobToBase64(blob);
-
+            // Prepare the request options
             const options = {
                 method: 'POST',
-                headers: {
+                headers: {/* Request headers */
                     'content-type': 'application/json',
                     'X-RapidAPI-Key': '85df79b3afmshb9b935fe7ccbcebp1365a4jsn0a21f5b9aca4',
                     'X-RapidAPI-Host': 'pronunciation-assessment1.p.rapidapi.com'
                 },
-                body: `{"audio_base64":"${audioBase64}","audio_format":"m4a","text":"${textToRead}"}`
+                body: `{"audio_base64":"${audioBase64}","audio_format":"m4a","text":"${textToRead}"}`/* Request body with audio data and text to analyze */
             };
-
+            // Send the audio data to the pronunciation assessment API
             let updatedResults = [...results];
 
             await fetch('https://pronunciation-assessment1.p.rapidapi.com/pronunciation', options)
                 .then(response => response.json())
                 .then(response => {
+                  // Process the response and update state variables
                     console.log(JSON.stringify(response));
                     updatedResults.push(response);
                     setScore(response.score);
                     // const word = response.words[0];
+                     // Extract and set IPA details
+                    // Log the phonetic details and IPA score
                     console.log(response.words[0]);
+                    // Set IPA and IPA score state variables
                     const ipa_score_map = new Map();
                     var phonetic = '/';
                     var sounds_like = '/';
@@ -128,13 +136,13 @@ const BasicScreen = () => {
             console.log('Error uploading file:', err);
         }
     }
-
+ // Function to randomly select a text to read from the configuration
     const addPost = () => {
       const randomItem = Config.BASIC[Math.floor(Math.random() * Config.BASIC.length)];
         setTextToRead(randomItem);
     }
     
-
+  // Function to render the text to read
     function getTextToRead() {
         return (
           <View style={styles.textContainer}>
@@ -142,8 +150,9 @@ const BasicScreen = () => {
       </View>
         );
       }
-
+// Render the component
       return (
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <Text style={styles.heading}>Basic Topic Pronunciation</Text>
           <Image source={Basic} style={styles.image}></Image>
@@ -183,10 +192,14 @@ const BasicScreen = () => {
             </View>
           )}
         </View>
+       </ScrollView>
       );
     };
-    
+    // style
     const styles = StyleSheet.create({
+      scrollContainer: {
+        flexGrow: 1,
+      },
       container: {
         flex: 1,
         backgroundColor: '#bf9bd9',
